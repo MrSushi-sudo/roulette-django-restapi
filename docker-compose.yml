@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+    db:
+        container_name: roulette_db
+        hostname: db
+        image: postgres
+        environment:
+                - POSTGRES_USER=maindb
+                - POSTGRES_PASSWORD=maindb
+                - POSTGRES_DB=maindb
+        volumes:
+                - ./dbs/postgres-data:/var/lib/postgresql
+
+    backend:
+        container_name: roulette_core
+        build: ./django_core
+        environment:
+            - WAIT_HOSTS=db:5432
+            - WAIT_HOSTS_TIMEOUT=200
+            - WAIT_SLEEP_INTERVAL=20
+            - WAIT_HOST_CONNECT_TIMEOUT=20
+        command:
+                sh -c "/wait &&
+                python3 manage.py makemigrations &&
+                python3 manage.py makemigrations *_app &&
+                python3 manage.py migrate &&
+                python3 manage.py runserver 0.0.0.0:8000"
+        volumes:
+                - static_volume:/home/djangocore/django_core/staticfiles
+        ports:
+          - "1337:8000"
+        depends_on:
+                - db
+volumes:
+  static_volume:
