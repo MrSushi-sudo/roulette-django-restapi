@@ -9,9 +9,11 @@ docker-compose up -d --build
 Начать раунд
 
 POST http://127.0.0.1:1337/roulette/start/
+
 Вращение
 
 POST http://127.0.0.1:1337/roulette/spin/ (post запрос с id пользователя) Когда вращений становится 11, автоматически записывается джекпот заканчивается раунд и начинается новый
+
 Закончить раунд
 
 PATCH http://127.0.0.1:1337/roulette/end/
@@ -21,6 +23,7 @@ PATCH http://127.0.0.1:1337/roulette/end/
 Первый фильтр из ТЗ
 
 GET http://127.0.0.1:1337/roulette/statistics/
+
 Второй фильтр из ТЗ
 
 GET http://127.0.0.1:1337/roulette/statistics/?max_active=любоезначение
