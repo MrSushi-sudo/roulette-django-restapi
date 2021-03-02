@@ -1,6 +1,6 @@
 from django.urls import path
 
-from roulette_app.views import *
+from .views import *
 
 urlpatterns = [
     path('start/', StartRound.as_view()),

@@ -1,14 +1,15 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
-from roulette_app.models import *
-from roulette_app.serializers import *
-from roulette_app.utils import get_spin
+from .models import *
+from .serializers import *
+from .utils import get_spin
 from django.db.models import Count, QuerySet
 
 
 class StartRound(generics.CreateAPIView):
     queryset = Round.objects.all()
     serializer_class = RoundCreateSerializer
+
 
 class SpinTheRoulette(generics.CreateAPIView):
     queryset = Spin.objects.all()
@@ -22,13 +23,10 @@ class SpinTheRoulette(generics.CreateAPIView):
 
         user_data = request_data["user"][0]
 
-        current_round = Round.objects.filter(
-            user=user_data
-        ).reverse().first()
+        current_round = Round.objects.filter(user=user_data).reverse().first()
 
         # проверем, закончился ли этот раунд
-        is_round_finished = current_round.spins_count == 11 \
-            or current_round.is_finished
+        is_round_finished = current_round.spins_count == 11 or current_round.is_finished
 
         if is_round_finished:
             new_round = Round(user=user_data)
@@ -39,8 +37,7 @@ class SpinTheRoulette(generics.CreateAPIView):
         # получаем все спины из этого раунда
         spins = list(current_round.spins.values())
 
-        spins = [Spin.objects.get(pk=spin['id']).result \
-            for spin in spins]
+        spins = [Spin.objects.get(pk=spin['id']).result for spin in spins]
 
         # получаем спин для раунда
         spin = get_spin(spins)
@@ -66,6 +63,7 @@ class SpinTheRoulette(generics.CreateAPIView):
 
         return Response(data=request_data.data, status=status.HTTP_201_CREATED)
 
+
 class EndRound(generics.UpdateAPIView):
     queryset = Round.objects.all()
     serializer_class = RoundUpdateSerializer
@@ -78,16 +76,12 @@ class EndRound(generics.UpdateAPIView):
 
         user_data = request_data["user"][0]
 
-        current_round = Round.objects.filter(
-            user=user_data
-        ).reverse().first()
+        current_round = Round.objects.filter(user=user_data).reverse().first()
 
         current_round.is_finished = True
         current_round.save()
 
-        response_data = Round.objects.filter(
-            user=user_data
-        ).reverse().values().first()
+        response_data = Round.objects.filter(user=user_data).reverse().values().first()
 
         return Response(data=response_data, status=status.HTTP_200_OK)
 
@@ -113,12 +107,12 @@ class RoundStatistics(generics.ListAPIView):
 
             if len(spin_dict['users']) == 0:
                 spin_dict['users'].append(
-                        {
-                            'user': result_['user'],
-                            'games': 1,
-                            'spins': result_['spins_count']
-                            }
-                    )
+                    {
+                        'user': result_['user'],
+                        'games': 1,
+                        'spins': result_['spins_count']
+                    }
+                )
 
             else:
                 isFound = False
@@ -135,10 +129,10 @@ class RoundStatistics(generics.ListAPIView):
                             'user': result_['user'],
                             'games': 1,
                             'spins': result_['spins_count']
-                            }
+                        }
                     )
 
-        spin_dict = { 'users' : sorted(spin_dict['users'], key=sortFunction, reverse=True)}
+        spin_dict = {'users': sorted(spin_dict['users'], key=sortFunction, reverse=True)}
 
         if 'max_active' in request.GET:
 
@@ -147,20 +141,19 @@ class RoundStatistics(generics.ListAPIView):
 
             return Response(data=spin_dict, status=status.HTTP_200_OK)
 
-
         max_round = spin_dict['users'][0]['games']
 
         statistics = {}
 
         for game_ in range(1, max_round + 1):
             user_list = []
-
+            kol = 0
             for user_ in spin_dict['users']:
 
                 if user_['games'] >= game_:
                     user_list += user_['user']
+                    kol += 1
 
-            statistics[game_] = user_list
+            statistics[game_] = kol
 
         return Response(data=statistics, status=status.HTTP_200_OK)
-

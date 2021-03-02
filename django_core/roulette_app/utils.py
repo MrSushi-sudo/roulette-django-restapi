@@ -1,5 +1,6 @@
 import random
 
+
 def get_available_spins(array: list) -> list:
     """
     Функция для получения возможных спинов
@@ -13,7 +14,7 @@ def get_available_spins(array: list) -> list:
 
     available_spins = [
         spin for spin in range(1, 11) \
-            if spin not in array
+        if spin not in array
     ]
 
     return available_spins
