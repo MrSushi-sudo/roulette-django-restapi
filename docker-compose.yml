@@ -25,12 +25,22 @@ services:
                 python3 manage.py makemigrations &&
                 python3 manage.py makemigrations *_app &&
                 python3 manage.py migrate &&
-                python3 manage.py runserver 0.0.0.0:8000"
+                gunicorn django_core.wsgi:application --bind 0.0.0.0:8000"
         volumes:
                 - static_volume:/home/djangocore/django_core/staticfiles
-        ports:
-          - "1337:8000"
+        expose:
+                - 8000
         depends_on:
                 - db
+
+    nginx:
+        container_name: roulette_nginx
+        build: ./nginx
+        ports:
+            - 1337:80
+        depends_on:
+            - backend
+
 volumes:
   static_volume:
+
